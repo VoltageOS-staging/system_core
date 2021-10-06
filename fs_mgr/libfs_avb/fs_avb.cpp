@@ -461,7 +461,8 @@ AvbUniquePtr AvbHandle::Open() {
 
         // Checks whether FLAGS_HASHTREE_DISABLED is set.
         bool hashtree_disabled = ((AvbVBMetaImageFlags)vbmeta_header.flags &
-                                  AVB_VBMETA_IMAGE_FLAGS_HASHTREE_DISABLED);
+                                  AVB_VBMETA_IMAGE_FLAGS_HASHTREE_DISABLED) ||
+                                  allow_verification_error;
         if (hashtree_disabled) {
             avb_handle->status_ = AvbHandleStatus::kHashtreeDisabled;
         }
