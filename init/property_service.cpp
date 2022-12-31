@@ -938,7 +938,7 @@ static void workaround_snet_properties() {
     // Bail out if this is recovery, fastbootd, or anything other than a normal boot.
     // fastbootd, in particular, needs the real values so it can allow flashing on
     // unlocked bootloaders.
-    if (!isNormalBoot || IsRecoveryMode()) {
+    if (!isNormalBoot) {
         return;
     }
 
@@ -1335,9 +1335,7 @@ void PropertyLoadBootDefaults() {
     }
 
     // Workaround SafetyNet
-    if (!IsRecoveryMode()) {
-        workaround_snet_properties();
-    }
+    workaround_snet_properties();
 }
 
 bool LoadPropertyInfoFromFile(const std::string& filename,
