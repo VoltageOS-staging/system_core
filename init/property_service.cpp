@@ -1451,6 +1451,10 @@ static void HandleInitSocket() {
             // Read persistent properties after all default values have been loaded.
             auto persistent_properties = LoadPersistentProperties();
             for (const auto& persistent_property_record : persistent_properties.properties()) {
+                if (persistent_property_record.name() == "persist.adb.tls_server.enable") {
+                    continue;
+                }
+
                 InitPropertySet(persistent_property_record.name(),
                                 persistent_property_record.value());
             }
