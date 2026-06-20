@@ -49,7 +49,6 @@ class FirstStageMount {
     virtual void UseDsuIfPresent() {}
     virtual void SaveRamdiskPathToSnapuserd() {}
     virtual bool AllowVerityCheckAtMostOnce() { return false; }
-    virtual void GetExtraBlockDevices(std::set<std::string>*) {}
 
     bool InitDevices();
     bool InitRequiredDevices(std::set<std::string> devices);
