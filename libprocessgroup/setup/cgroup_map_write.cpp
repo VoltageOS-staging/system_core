@@ -28,6 +28,7 @@
 #include <unistd.h>
 
 #include <android-base/logging.h>
+#include <android-base/properties.h>
 #include <processgroup/cgroup_descriptor.h>
 #include <processgroup/processgroup.h>
 #include <processgroup/setup.h>
@@ -295,15 +296,20 @@ bool CgroupSetup() {
         }
     }
 
-    const auto it = descriptors.find(CGROUPV2_HIERARCHY_NAME);
-    const std::string cgroup_v2_root = (it == descriptors.end())
-                                               ? CGROUP_V2_ROOT_DEFAULT
-                                               : it->second.controller()->path();
+    // System / app isolation. Re-gated behind a runtime property so legacy
+    // kernels that can't create the v2 sub-hierarchies don't fail to boot.
+    // Defaults to false => matches pre-isolation (a16) behavior.
+    if (android::base::GetBoolProperty("ro.cgroup.sys_app_isolation", false)) {
+        const auto it = descriptors.find(CGROUPV2_HIERARCHY_NAME);
+        const std::string cgroup_v2_root = (it == descriptors.end())
+                                                   ? CGROUP_V2_ROOT_DEFAULT
+                                                   : it->second.controller()->path();
 
-    LOG(INFO) << "Using system/app isolation under: " << cgroup_v2_root;
-    if (!CreateV2SubHierarchy(cgroup_v2_root + "/apps", descriptors) ||
-        !CreateV2SubHierarchy(cgroup_v2_root + "/system", descriptors)) {
-        return false;
+        LOG(INFO) << "Using system/app isolation under: " << cgroup_v2_root;
+        if (!CreateV2SubHierarchy(cgroup_v2_root + "/apps", descriptors) ||
+            !CreateV2SubHierarchy(cgroup_v2_root + "/system", descriptors)) {
+            LOG(ERROR) << "Failed to set up system/app isolation; continuing";
+        }
     }
 
     return true;
