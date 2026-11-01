@@ -1327,6 +1327,21 @@ static void SetSafetyNetProps() {
         {"ro.secureboot.lockstate", "locked"}
     };
 
+    // A device launched before this property existed reports no board level, and readers default the
+    // missing one to 0 -- below the product level of the same device, a state no hardware is ever in.
+    if (android::base::GetProperty("ro.board.first_api_level", "").empty()) {
+        std::string first = android::base::GetProperty("ro.product.first_api_level", "");
+        if (!first.empty()) {
+            res = PropertySetNoSocket("ro.board.first_api_level", first, &error);
+            if (res == PROP_SUCCESS) {
+                LOG(INFO) << "Property 'ro.board.first_api_level' set successfully to '" << first << "'";
+            } else {
+                LOG(ERROR) << "Failed to set property 'ro.board.first_api_level'"
+                           << ": err=" << res << " (" << error << ")";
+            }
+        }
+    }
+
     for (const auto& [name, value] : props) {
         res = PropertySetNoSocket(name, value, &error);
         if (res == PROP_SUCCESS) {
